@@ -1,0 +1,1081 @@
+/* =========================================================================
+   PETROLEUM LABORATORY — STYLESHEET
+   Design tokens -> Base/Reset -> Layout -> Components -> Utilities
+   RTL is the default (html[dir="rtl"]); English flips via logical
+   properties (margin-inline, inset-inline-start, etc.) so almost nothing
+   needs a manual mirrored override.
+   ========================================================================= */
+
+:root{
+  /* ---- Official Aramco brand colors, used as the single source of truth.
+     Everything else in this file draws from these via the --c-* / --grad-*
+     aliases below, so the whole stylesheet repaints consistently. --- */
+  --aramco-green:       #84BD00;
+  --aramco-dark-green:  #00843D;
+  --aramco-blue:        #00A3E0;
+  --aramco-dark-blue:   #0033A0;
+  --aramco-gray:        #5F6369;
+  --aramco-dark-gray:   #323232;
+  --aramco-light-gray:  #DADADA;
+  --aramco-neutral-gray:#C0C0C0;
+  --aramco-white:       #FFFFFF;
+
+  /* ---- Off-white — the elegant, non-harsh replacement for pure white
+     text on dark green/blue surfaces (header, hero, dark overlays).
+     Panel/card backgrounds (--c-panel, --aramco-white) are untouched;
+     this token is for TEXT only. --- */
+  --c-offwhite:         #E8EDE9;
+
+  /* ---- Surfaces: soft, comfortable neutrals — never pure white, never
+     pure black. Green is the dominant identity; blue stays secondary. --- */
+  --c-bg:            #F5F7F5;  /* soft off-white — main page background */
+  --c-bg-alt:        #EFF1EE;  /* soft neutral — image/media placeholder fill */
+  --c-panel:         #FFFFFF;  /* white — cards, modals, panels */
+  --c-panel-raised:  #F2F4F1;  /* subtle raised hover fill */
+  --c-line:          var(--aramco-light-gray);   /* #DADADA — card borders */
+  --c-line-soft:     #E9EBE8;  /* softer divider */
+
+  --c-ink:           var(--aramco-dark-gray);    /* #323232 — primary text */
+  --c-ink-dim:       var(--aramco-gray);         /* #5F6369 — secondary text */
+  --c-ink-faint:     #8B8F94;  /* tertiary labels */
+
+  --c-brass:         var(--aramco-green);        /* #84BD00 — dominant primary accent */
+  --c-brass-light:   #4E7A00;  /* dark, readable green — used for label text on light surfaces */
+  --c-brass-dim:     #DCEBB8;  /* pale green — subtle resting borders/tints */
+
+  --c-teal:          var(--aramco-blue);         /* #00A3E0 — secondary accent, used sparingly */
+  --c-teal-light:    #33B5E6;  /* brighter blue — occasional labels/icons */
+  --c-teal-dim:      #CDEEF9;  /* pale blue — rare subtle tints */
+
+  --c-danger:        #C0392B;
+  --c-success:       var(--aramco-dark-green);
+
+  /* ---- Premium Aramco-style gradients, used deliberately (hero, buttons,
+     active nav underline, section bands) rather than everywhere. --- */
+  --grad-brass:    linear-gradient(135deg, var(--aramco-green), var(--aramco-dark-green));   /* primary identity */
+  --grad-secondary:linear-gradient(135deg, var(--aramco-dark-green), var(--aramco-dark-blue));
+  --grad-accent:   linear-gradient(135deg, var(--aramco-green), var(--aramco-blue));
+  --grad-teal:     linear-gradient(135deg, var(--c-teal-light), var(--c-teal));
+
+  /* ---- Header — deep, sophisticated (not bright/saturated) green at
+     rest, shifting to a subtle green→blue gradient once collapsed into
+     the thin sticky bar. Kept as dedicated tokens so the header's
+     palette is easy to tune without touching the rest of the site. --- */
+  --grad-header-top:      linear-gradient(135deg, #0B3B22 0%, #082C1A 100%);
+  --grad-header-scrolled: linear-gradient(90deg, #0A3320 0%, #0B3A4A 100%);
+  --grad-header-progress: linear-gradient(90deg, var(--aramco-green), var(--aramco-blue));
+
+  /* ---- Semantic aliases --- */
+  --color-primary:      var(--aramco-green);
+  --color-primary-dark: var(--aramco-dark-green);
+  --color-deep-green:   #00612C;
+  --color-blue:         var(--aramco-blue);
+  --color-blue-dark:    var(--aramco-dark-blue);
+  --color-white:        #FFFFFF;
+  --color-background:   var(--c-bg);
+  --color-surface:      var(--c-panel);
+  --color-border:       var(--c-line);
+  --color-text:         var(--c-ink);
+  --color-text-muted:   var(--c-ink-dim);
+
+  /* ---- Type — one unified, corporate-grade font family (Cairo) across
+     both Arabic and English so the two languages feel visually balanced
+     and consistent, with weight doing the work of hierarchy (headings/
+     nav/body). IBM Plex Mono stays for the small mono accents (eyebrows,
+     method numbers) untouched. --- */
+  --font-ar: "Cairo", "Segoe UI", sans-serif;
+  --font-en: "Cairo", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --fs-h1: clamp(2.6rem, 1.5rem + 4.6vw, 5.8rem);
+  --fs-h2: clamp(2rem, 1.3rem + 2.4vw, 3.4rem);
+  --fs-h3: clamp(1.24rem, 1.02rem + 0.8vw, 1.65rem);
+  --fs-body: clamp(1rem, 0.94rem + 0.2vw, 1.1rem);
+  --fs-small: 0.86rem;
+  --fs-eyebrow: 0.78rem;
+
+  /* ---- Layout --- */
+  --maxw: 1360px;
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --header-h: 88px;
+  --ease: cubic-bezier(.22,.7,.24,1);
+  --dur-s: .25s;
+  --dur-m: .5s;
+  --dur-l: .9s;
+}
+
+/* =============================== RESET =============================== */
+*, *::before, *::after{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+  *, *::before, *::after{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+body{
+  margin:0;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-en);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+html.lang-ar body{ font-family: var(--font-ar); }
+h1,h2,h3,h4,h5{ margin: 0; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+/* Arabic headings get a touch more line-height — Tajawal's taller glyphs
+   read more comfortably with slightly looser leading than tight Latin
+   headings need. */
+html.lang-ar h1, html.lang-ar h2, html.lang-ar h3, html.lang-ar h4, html.lang-ar h5{ line-height: 1.32; letter-spacing: 0; }
+p{ margin: 0; }
+img{ max-width: 100%; display: block; }
+button{ font-family: inherit; }
+a{ color: inherit; text-decoration: none; }
+ul{ margin:0; padding:0; list-style:none; }
+
+body.scroll-locked{ overflow: hidden; }
+
+::selection{ background: var(--c-brass); color: var(--c-offwhite); }
+
+:focus-visible{
+  outline: 2px solid var(--c-brass-light);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.container{ max-width: var(--maxw); margin-inline: auto; padding-inline: clamp(20px, 4vw, 56px); }
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--c-brass-light);
+}
+html[dir="rtl"] .eyebrow{ letter-spacing: 0; }
+.eyebrow::before{
+  content:""; width:14px; height:1px; background: var(--c-brass);
+}
+
+.section{ padding-block: clamp(80px, 10vw, 148px); position: relative; }
+.section-head{ max-width: 760px; margin-bottom: clamp(40px, 6vw, 64px); display:flex; flex-direction:column; gap:16px; }
+.section-head h2{ font-size: var(--fs-h2); }
+.section-head__subtitle{ color: var(--c-ink-dim); font-size: 1.02rem; max-width: 620px; }
+
+/* =============================== REVEALS =============================== */
+[data-reveal]{
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity var(--dur-m) var(--ease), transform var(--dur-m) var(--ease);
+}
+[data-reveal].is-visible{ opacity: 1; transform: translateY(0); }
+
+/* =============================== BUTTONS =============================== */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding: 14px 28px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--c-brass-dim);
+  background: var(--c-panel);
+  color: var(--aramco-dark-green);
+  font-size: 0.94rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform var(--dur-s) var(--ease), border-color var(--dur-s), background var(--dur-s), color var(--dur-s), box-shadow var(--dur-s);
+}
+.btn:hover{ transform: translateY(-2px); border-color: var(--c-brass); color: var(--aramco-dark-green); box-shadow: 0 10px 22px -14px rgba(0,67,35,.35); }
+.btn--primary{
+  background: var(--grad-brass);
+  border-color: transparent;
+  color: var(--c-offwhite);
+  font-weight: 600;
+  box-shadow: 0 10px 24px -10px rgba(0,132,61,.35);
+}
+.btn--primary:hover{
+  background: linear-gradient(135deg, var(--aramco-dark-green), var(--color-deep-green));
+  box-shadow: 0 14px 30px -8px rgba(0,132,61,.45);
+}
+.btn--ghost{
+  background: var(--c-bg-alt);
+}
+.btn--icon{ padding: 10px; border-radius: 50%; }
+
+/* =============================== HEADER =============================== */
+/* Two visual states, both driven by the existing, unmodified
+   .is-scrolled class from initHeaderScrollState():
+   - Default (top of page): tall header, deep sophisticated dark-green
+     background, comfortable spacing — this is the "large main header".
+   - .is-scrolled: collapses into a thin, full-width sticky bar with a
+     subtle dark green → blue gradient, plus the scroll-progress hairline
+     along its bottom edge. The transition between the two is animated
+     (background, height, padding) rather than a hard cut. */
+.site-header{
+  position: fixed; inset-block-start: 0; inset-inline: 0;
+  z-index: 60;
+  color: var(--c-offwhite);
+  background: var(--grad-header-top);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -26px rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  transition: background var(--dur-l) var(--ease), box-shadow var(--dur-l) var(--ease), border-color var(--dur-l) var(--ease);
+}
+.site-header.is-scrolled{
+  background: var(--grad-header-scrolled);
+  backdrop-filter: blur(10px);
+  border-color: rgba(255,255,255,.1);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 16px 34px -20px rgba(0,0,0,.55);
+}
+.site-header__inner{
+  max-width: var(--maxw); margin-inline:auto;
+  padding-inline: clamp(20px,4vw,56px);
+  height: var(--header-h);
+  display:flex; align-items:center; justify-content:space-between; gap:24px;
+  transition: height var(--dur-m) var(--ease);
+}
+.site-header.is-scrolled .site-header__inner{ height: 60px; }
+.brand{ display:flex; align-items:center; gap:10px; color: inherit; }
+.brand__mark{ color: var(--c-offwhite); display:flex; transition: transform var(--dur-m) var(--ease); }
+.site-header.is-scrolled .brand__mark{ transform: scale(.88); }
+.brand__text{ font-weight:600; font-size: 1.05rem; letter-spacing: -0.01em; }
+.brand__text--footer{ font-size: 1.1rem; }
+
+.nav{ display:flex; align-items:center; gap: clamp(18px, 2.4vw, 34px); }
+.nav__link{
+  position:relative; font-size:.94rem; color: rgba(232,237,233,.8);
+  padding-block: 6px;
+  transition: color var(--dur-s);
+}
+.nav__link::after{
+  content:""; position:absolute; inset-inline-start:0; inset-block-end:-2px;
+  width:0; height:2px; background: var(--aramco-green);
+  transition: width var(--dur-s) var(--ease);
+}
+.nav__link:hover{ color: var(--c-offwhite); }
+.nav__link.is-active{ color: var(--c-offwhite); }
+.nav__link.is-active::after{ width:100%; }
+
+.header__actions{ display:flex; align-items:center; gap:10px; }
+
+/* ---- Language selector — "العربية | English", Arabic first, a small
+   vertical separator, English second. This exact visual order is fixed
+   (not mirrored by RTL/LTR) since it names both languages by label
+   rather than relying on direction. Small, clean, sits with the other
+   header actions (top of the page, i.e. the header's upper area) in
+   both the tall and thin-sticky header states. --- */
+.lang-switch{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size: .78rem; font-weight:500; letter-spacing:.01em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  cursor:pointer;
+  transition: background var(--dur-s), border-color var(--dur-s);
+}
+.lang-switch:hover{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
+.lang-switch__option{
+  color: rgba(232,237,233,.55);
+  transition: color var(--dur-s) var(--ease), font-weight var(--dur-s);
+  padding: 2px 2px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+.lang-switch__option[data-active="true"]{
+  color: var(--c-offwhite);
+  font-weight: 700;
+}
+.lang-switch__sep{
+  color: rgba(232,237,233,.35);
+  font-size: .78rem;
+}
+.lang-switch:hover .lang-switch__option{ color: rgba(232,237,233,.85); }
+.lang-switch:hover .lang-switch__option[data-active="true"]{ color: var(--c-offwhite); }
+
+.nav-toggle{ display:none; color: var(--c-offwhite); background: rgba(255,255,255,.14); }
+.search-toggle{ color: var(--c-offwhite); background: rgba(255,255,255,.14); }
+.search-toggle:hover{ background: rgba(255,255,255,.24); transform: translateY(-1px); }
+
+/* ---- Scroll progress hairline — sits along the very bottom edge of
+   the header, spans its full width, and only becomes visible once the
+   header has collapsed into the thin sticky bar (i.e. exactly when
+   requirement #6 says it should start filling). Height ~3px, a subtle
+   green → blue gradient, updated every scroll frame from app.js via
+   the fill element's transform (GPU-friendly, no layout thrash). --- */
+.scroll-progress{
+  position:absolute; inset-inline:0; inset-block-end:-3px;
+  height:3px;
+  background: rgba(255,255,255,.08);
+  overflow:hidden;
+  opacity:0;
+  transition: opacity var(--dur-m) var(--ease);
+  pointer-events:none;
+}
+.site-header.is-scrolled .scroll-progress{ opacity:1; }
+.scroll-progress__fill{
+  height:100%; width:100%;
+  background: var(--grad-header-progress);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .12s linear;
+}
+html[dir="rtl"] .scroll-progress__fill{ transform-origin: right center; }
+
+/* =============================== PROGRESS RAIL =============================== */
+.progress-rail{
+  position: fixed; inset-block-start: 50%; inset-inline-end: 26px;
+  transform: translateY(-50%);
+  z-index: 50;
+  display:flex; flex-direction:column; gap: 18px;
+}
+html[dir="rtl"] .progress-rail{ inset-inline-end: auto; inset-inline-start: 26px; }
+.progress-dot{
+  display:flex; align-items:center; gap:10px;
+  color: var(--c-ink-faint);
+}
+.progress-dot__index{
+  font-family: var(--font-mono); font-size: .68rem;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--c-line);
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(6px);
+  color: var(--c-ink-dim);
+  display:flex; align-items:center; justify-content:center;
+  transition: border-color var(--dur-s), color var(--dur-s);
+}
+.progress-dot__label{
+  font-size: .74rem; opacity: 0; max-width:0; overflow:hidden; white-space:nowrap;
+  color: var(--c-ink-dim);
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  transition: opacity var(--dur-s), max-width var(--dur-s), padding var(--dur-s);
+}
+.progress-dot:hover .progress-dot__label{ opacity:1; max-width: 160px; padding: 3px 10px; }
+.progress-dot:hover .progress-dot__index,
+.progress-dot.is-active .progress-dot__index{ border-color: var(--c-brass-light); color: var(--c-brass-light); }
+@media (max-width: 1024px){ .progress-rail{ display:none; } }
+
+/* Subtle, slow background motion — barely perceptible, GPU-friendly
+   (transform only); respects prefers-reduced-motion via the global
+   reset above. */
+@keyframes heroSlowZoom{ 0%{ transform: scale(1); } 100%{ transform: scale(1.05); } }
+
+/* =============================== HERO =============================== */
+/* Everything below is scoped to .hero* selectors only — no global tokens
+   are changed, so no other section of the site is affected. */
+.hero{
+  position: relative;
+  min-height: 100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  overflow:hidden;
+  padding-inline: 24px;
+}
+.hero__bg{
+  position:absolute; inset:0;
+  overflow:hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: #14181A;
+  filter: saturate(.96) contrast(1.04) brightness(.97);
+}
+/* Cinematic, asymmetric overlay: lighter/more visible toward the side the
+   text sits on, smoothly deepening into dark charcoal with a subtle green
+   undertone toward the opposite side — mirrored for RTL below so the
+   readable zone always matches where the text actually is. */
+.hero__overlay{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg,
+      rgba(16,21,18,.28) 0%,
+      rgba(21,26,23,.5) 40%,
+      rgba(0,61,43,.46) 62%,
+      rgba(8,11,9,.88) 100%
+    ),
+    linear-gradient(180deg, rgba(8,11,9,.1) 0%, transparent 32%, rgba(8,11,9,.5) 100%);
+}
+html[dir="rtl"] .hero__overlay{
+  background:
+    linear-gradient(270deg,
+      rgba(16,21,18,.28) 0%,
+      rgba(21,26,23,.5) 40%,
+      rgba(0,61,43,.46) 62%,
+      rgba(8,11,9,.88) 100%
+    ),
+    linear-gradient(180deg, rgba(8,11,9,.1) 0%, transparent 32%, rgba(8,11,9,.5) 100%);
+}
+.hero__content{ position:relative; z-index:2; max-width: 860px; display:flex; flex-direction:column; align-items:center; gap: 22px; }
+.hero__eyebrow{ font-family: var(--font-mono); color: #B7D334; }
+.hero__title{
+  font-size: var(--fs-h1);
+  font-weight: 500;
+  color: #F2F3EF;
+}
+.hero__title-accent{
+  display:block;
+  color: #00A651;
+  font-weight: 600;
+}
+.hero__subtitle{ color: #C7CBC6; font-weight: 400; font-size: clamp(1rem, .9rem + .4vw, 1.25rem); max-width: 640px; }
+.hero__actions{ margin-block-start: 8px; }
+.hero__actions .btn--primary{
+  background: linear-gradient(135deg, #005B3A, #003D2B);
+  box-shadow: 0 10px 24px -12px rgba(0,61,43,.5);
+  border-radius: var(--radius-m);
+}
+.hero__actions .btn--primary:hover{
+  background: linear-gradient(135deg, #00A651, #005B3A);
+  box-shadow: 0 14px 30px -10px rgba(0,61,43,.6);
+}
+.hero__scroll{
+  position:absolute; inset-block-end: 34px; inset-inline-start:50%; transform: translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  font-size:.78rem; color: #C7CBC6;
+  z-index:2;
+  animation: bob 2.4s ease-in-out infinite;
+}
+html[dir="rtl"] .hero__scroll{ transform: translateX(50%); }
+@keyframes bob{ 0%,100%{ transform: translateY(0) translateX(-50%);} 50%{ transform: translateY(6px) translateX(-50%);} }
+html[dir="rtl"] .hero__scroll{ animation-name: bobRtl; }
+@keyframes bobRtl{ 0%,100%{ transform: translateY(0) translateX(50%);} 50%{ transform: translateY(6px) translateX(50%);} }
+
+/* Editorial side-aligned layout on larger screens — content sits in the
+   lighter zone of the overlay, with generous negative space, mirrored
+   for RTL so it always aligns with the readable side. Mobile stays
+   centered (safer for small screens). */
+@media (min-width: 900px){
+  .hero{ align-items:flex-start; text-align:start; padding-inline-start: clamp(48px, 7vw, 110px); }
+  .hero__content{ align-items:flex-start; max-width: 620px; }
+  .hero__scroll{ inset-inline-start: clamp(48px, 7vw, 110px); transform:none; }
+  html[dir="rtl"] .hero__scroll{ transform:none; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(6px);} }
+  @keyframes bobRtl{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(6px);} }
+}
+
+/* Staged, premium entrance — background/overlay fade in immediately via
+   .hero-ready, then eyebrow -> title -> subtitle -> CTA reveal in a
+   gentle sequence. No bounce, no zoom, no spin. */
+.hero__bg, .hero__overlay{
+  opacity: 0;
+  transition: opacity 1.1s var(--ease);
+}
+.hero.hero-ready .hero__bg{ opacity: 1; animation: heroSlowZoom 20s ease-out forwards; }
+.hero.hero-ready .hero__overlay{ opacity: 1; transition-delay: .15s; }
+
+.hero .hero__eyebrow, .hero .hero__title, .hero .hero__subtitle, .hero .hero__actions{
+  opacity:0; transform: translateY(22px);
+  transition: opacity .9s var(--ease), transform .9s var(--ease);
+}
+.hero.hero-ready .hero__eyebrow{ transition-delay: .5s; }
+.hero.hero-ready .hero__title{ transition-delay: .68s; }
+.hero.hero-ready .hero__subtitle{ transition-delay: .88s; }
+.hero.hero-ready .hero__actions{ transition-delay: 1.06s; }
+.hero.hero-ready .hero__eyebrow,
+.hero.hero-ready .hero__title,
+.hero.hero-ready .hero__subtitle,
+.hero.hero-ready .hero__actions{ opacity:1; transform: translateY(0); }
+
+/* =============================== ABOUT =============================== */
+.about__body{
+  font-size: clamp(1.05rem, 1rem + .3vw, 1.28rem);
+  color: var(--c-ink);
+  max-width: 900px;
+  line-height: 1.8;
+  border-inline-start: 2px solid var(--c-brass);
+  padding-inline-start: 22px;
+}
+/* Premium Aramco-green statistics band — deliberate visual rhythm
+   against the soft-white page around it. */
+.pillars{
+  margin-block-start: 48px;
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: 1px;
+  background: rgba(255,255,255,.18);
+  border-radius: var(--radius-l);
+  overflow:hidden;
+  box-shadow: 0 30px 70px -30px rgba(0,67,35,.45);
+}
+.pillar{
+  background: var(--grad-brass);
+  padding: 36px 22px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  text-align:center;
+  color: var(--c-offwhite);
+  transition: transform var(--dur-s) var(--ease), filter var(--dur-s);
+}
+.pillar:hover{ transform: translateY(-3px); filter: brightness(1.06); }
+.pillar--clickable{ cursor:pointer; }
+.pillar--clickable:focus-visible{ outline: 2px solid rgba(255,255,255,.9); outline-offset: -6px; border-radius: var(--radius-s); }
+.pillar__icon{ width:26px; height:26px; color: rgba(255,255,255,.92); }
+.pillar__value{
+  font-family: var(--font-mono); font-weight: 700; line-height:1;
+  font-size: clamp(1.7rem, 1.3rem + 1.5vw, 2.5rem);
+  color: var(--c-offwhite);
+}
+/* Labeled counter variant (Equipment Count / Tests Count): a small
+   uppercase label sits above the number, which keeps the exact same
+   size, weight, and animation as every other pillar counter. Only the
+   label is new — the number is never shrunk to make room for it. */
+.pillar__value--prefixed{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap: 4px;
+}
+.pillar__value-prefix{
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.82);
+  line-height: 1.2;
+}
+.pillar__value-number{
+  font-family: var(--font-mono); font-weight: 700; line-height:1;
+  font-size: clamp(1.7rem, 1.3rem + 1.5vw, 2.5rem);
+  color: var(--c-offwhite);
+}
+.pillar__title{ font-size: .88rem; font-weight:500; color: rgba(255,255,255,.92); }
+
+/* =============================== SAFETY =============================== */
+.safety-grid{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+}
+.safety-card{
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  display:flex; flex-direction:column;
+  box-shadow: 0 24px 50px -38px rgba(0,0,0,.22);
+  transition: transform var(--dur-m) var(--ease), border-color var(--dur-m), box-shadow var(--dur-m);
+}
+.safety-card:hover{ transform: translateY(-6px); border-color: var(--c-brass); box-shadow: 0 32px 60px -30px rgba(0,132,61,.25); }
+.safety-card__media{ position:relative; aspect-ratio: 16/10; overflow:hidden; background: var(--c-bg-alt); }
+.safety-card__media img{ width:100%; height:100%; object-fit:cover; transition: transform .7s var(--ease); }
+.safety-card:hover .safety-card__media img{ transform: scale(1.035); }
+.safety-card__icon{
+  position:absolute; inset-block-start:16px; inset-inline-start:16px;
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(0,67,35,.72); color: var(--c-offwhite);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 22px -10px rgba(0,0,0,.35);
+}
+.safety-card__icon svg{ width:20px; height:20px; }
+.safety-card__body{ padding: 24px 26px 28px; display:flex; flex-direction:column; gap:10px; }
+.safety-card__title{ font-size: 1.1rem; transition: color var(--dur-s); }
+.safety-card:hover .safety-card__title{ color: var(--aramco-dark-green); }
+.safety-card__desc{ color: var(--c-ink-dim); font-size:.95rem; line-height:1.65; }
+
+/* Brief attention pulse used when Search deep-links to a Safety card
+   that has no dedicated detail view of its own. Purely additive —
+   does not alter the card's resting appearance or existing hover
+   states above. */
+.safety-card--highlight{ animation: safetyCardPulse 1.6s var(--ease); }
+@keyframes safetyCardPulse{
+  0%{ box-shadow: 0 0 0 0 rgba(132,189,0,.55); }
+  55%{ box-shadow: 0 0 0 16px rgba(132,189,0,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(132,189,0,0); }
+}
+
+/* =============================== SECTIONS GRID =============================== */
+.sections-grid{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+}
+.section-card{
+  position: relative;
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-l);
+  overflow:hidden;
+  display:flex; flex-direction:column;
+  box-shadow: 0 24px 50px -38px rgba(0,0,0,.22);
+  transition: transform var(--dur-m) var(--ease), border-color var(--dur-m), box-shadow var(--dur-m);
+}
+.section-card::before{
+  content:""; display:block; height:4px;
+  background: var(--grad-brass);
+}
+.section-card::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: linear-gradient(160deg, rgba(132,189,0,.08), transparent 55%);
+  opacity:0; transition: opacity var(--dur-m) var(--ease);
+}
+.section-card:hover{
+  transform: translateY(-6px);
+  border-color: var(--c-brass);
+  box-shadow: 0 32px 60px -30px rgba(0,132,61,.25);
+}
+/* Laboratory Storage cards use the exact same .section-card design but
+   have no numbered badge and no CTA button — the whole card is the
+   click target (same accessible pattern as .equip-card). */
+.section-card--plain{ cursor:pointer; }
+.section-card--plain:focus-visible{ outline: 2px solid var(--c-brass); outline-offset: 2px; }
+.section-card:hover::after{ opacity:1; }
+.section-card__media{ position:relative; aspect-ratio: 4/3; overflow:hidden; background: var(--c-bg-alt); }
+.section-card__media img{ width:100%; height:100%; object-fit:cover; transition: transform .7s var(--ease); }
+.section-card:hover .section-card__media img{ transform: scale(1.035); }
+.section-card__badge{
+  position:absolute; inset-block-start:14px; inset-inline-start:14px;
+  font-family: var(--font-mono); font-size:.72rem;
+  background: rgba(0,67,35,.7); border:1px solid rgba(255,255,255,.25);
+  padding: 5px 10px; border-radius: var(--radius-s); color: var(--c-offwhite);
+  backdrop-filter: blur(6px);
+}
+.section-card__body{ padding: 24px 26px 28px; display:flex; flex-direction:column; gap:12px; flex:1; }
+.section-card__title{ font-size: 1.18rem; transition: color var(--dur-s); }
+.section-card:hover .section-card__title{ color: var(--aramco-dark-green); }
+.section-card__desc{ color: var(--c-ink-dim); font-size:.93rem; line-height:1.6; flex:1; }
+.section-card__cta{
+  align-self:flex-start; margin-block-start:6px;
+  padding: 10px 20px; font-size:.86rem;
+}
+.section-card__cta svg{ transition: transform var(--dur-s); }
+html[dir="rtl"] .section-card__cta svg{ transform: scaleX(-1); }
+.section-card__cta:hover svg{ transform: translateX(4px); }
+html[dir="rtl"] .section-card__cta:hover svg{ transform: scaleX(-1) translateX(4px); }
+
+/* =============================== SECTION DETAIL VIEW =============================== */
+.section-view{
+  position: fixed; inset:0; z-index: 90;
+  background: var(--c-bg);
+  overflow-y: auto;
+  transform: translateY(14px);
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition: opacity var(--dur-m) var(--ease), transform var(--dur-m) var(--ease), visibility var(--dur-m);
+}
+.section-view.is-open{ opacity:1; visibility:visible; pointer-events:auto; transform: translateY(0); }
+
+.section-view__hero{
+  position:relative; min-height: 46vh;
+  display:flex; align-items:flex-end;
+  background-size:cover; background-position:center;
+  padding: 90px clamp(20px,4vw,56px) 56px;
+}
+.section-view__hero-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,79,53,.55), var(--c-bg) 96%);
+}
+.section-view__back{
+  position:absolute; inset-block-start:24px; inset-inline-start:24px;
+  z-index:2; background: rgba(0,79,53,.55); backdrop-filter: blur(6px);
+  color: var(--c-offwhite);
+  border-color: rgba(255,255,255,.3);
+}
+html[dir="rtl"] .section-view__back svg{ transform: scaleX(-1); }
+.section-view__hero-content{ position:relative; z-index:1; max-width: 760px; display:flex; flex-direction:column; gap:14px; color: var(--c-offwhite); }
+.section-view__hero-content .eyebrow{ color: #C7E86B; }
+.section-view__hero-content .eyebrow::before{ background: #C7E86B; }
+.section-view__hero-content h2{ font-size: var(--fs-h2); }
+.section-view__hero-content p{ color: rgba(255,255,255,.85); }
+
+.section-view__body{ padding: 48px clamp(20px,4vw,56px) 96px; max-width: var(--maxw); margin-inline:auto; }
+.equip-group{ margin-block-end: 52px; }
+.equip-group__title{
+  font-family: var(--font-mono); font-size: .92rem; letter-spacing:.02em;
+  color: var(--c-brass-light);
+  padding-bottom: 14px; margin-bottom: 22px;
+  border-block-end: 1px solid var(--c-line);
+}
+.equip-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.equip-card{
+  display:flex; align-items:center; gap:14px;
+  background: var(--c-panel);
+  border:1px solid var(--c-line);
+  border-radius: var(--radius-m);
+  padding: 14px;
+  cursor:pointer;
+  box-shadow: 0 14px 30px -26px rgba(0,0,0,.2);
+  transition: transform var(--dur-s) var(--ease), border-color var(--dur-s), box-shadow var(--dur-s);
+}
+.equip-card:hover, .equip-card:focus-visible{
+  transform: translateY(-4px);
+  border-color: var(--c-brass);
+  box-shadow: 0 20px 34px -22px rgba(0,132,61,.28);
+}
+.equip-card__media{ width:63px; height:63px; border-radius: var(--radius-s); overflow:hidden; flex-shrink:0; background: var(--c-bg-alt); }
+.equip-card__media img{ width:100%; height:100%; object-fit:cover; transition: transform .5s var(--ease); }
+.equip-card:hover .equip-card__media img{ transform: scale(1.06); }
+.equip-card__body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.equip-card__category{ font-family: var(--font-mono); font-size:.68rem; color: var(--c-ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+.equip-card__title{ font-size:.98rem; font-weight:500; }
+.equip-card__arrow{ color: var(--c-brass-light); flex-shrink:0; transition: transform var(--dur-s) var(--ease); }
+.equip-card:hover .equip-card__arrow{ transform: translateX(3px); }
+html[dir="rtl"] .equip-card__arrow svg{ transform: scaleX(-1); }
+html[dir="rtl"] .equip-card:hover .equip-card__arrow{ transform: translateX(-3px); }
+
+/* Equipment/test cards shown inside a section (e.g. Hydrocarbon): exactly
+   3 per row, image on top, test name centered, method number at the
+   bottom. Separate from .equip-grid/.equip-card (used by the "Other
+   Devices" strip inside the equipment modal), which are unchanged. */
+.test-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.test-card{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:10px;
+  background: var(--c-panel);
+  border:1px solid var(--c-line);
+  border-radius: var(--radius-m);
+  padding: 18px 16px 20px;
+  cursor:pointer;
+  box-shadow: 0 14px 30px -26px rgba(0,0,0,.2);
+  transition: transform var(--dur-s) var(--ease), border-color var(--dur-s), box-shadow var(--dur-s);
+}
+.test-card:hover, .test-card:focus-visible{
+  transform: translateY(-4px);
+  border-color: var(--c-brass);
+  box-shadow: 0 20px 34px -22px rgba(0,132,61,.28);
+}
+.test-card__media{ width:100%; aspect-ratio: 4 / 3; border-radius: var(--radius-s); overflow:hidden; background: var(--c-bg-alt); }
+.test-card__media img{ width:100%; height:100%; object-fit:cover; transition: transform .5s var(--ease); }
+.test-card:hover .test-card__media img{ transform: scale(1.06); }
+.test-card__category{ font-family: var(--font-mono); font-size:.68rem; color: var(--c-ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+.test-card__title{ font-size:.98rem; font-weight:500; line-height:1.35; }
+.test-card__method{
+  margin-block-start: auto;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--c-line-soft);
+  width:100%;
+  font-family: var(--font-mono); font-size:.78rem; color: var(--c-brass-light);
+}
+
+@media (max-width: 900px){ .test-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px){ .test-grid{ grid-template-columns: 1fr; } }
+
+.empty-state{
+  display:flex; flex-direction:column; align-items:flex-start; gap:16px;
+  padding: 48px 0; max-width: 480px;
+}
+.empty-state__icon{ width:40px; height:40px; color: var(--c-brass); }
+.empty-state h3{ font-size:1.3rem; }
+.empty-state p{ color: var(--c-ink-dim); }
+
+/* =============================== MODAL =============================== */
+.modal{
+  position: fixed; inset:0; z-index: 120;
+  display:flex; align-items:center; justify-content:center;
+  padding: 24px;
+  visibility: hidden; opacity:0;
+  transition: opacity var(--dur-s), visibility var(--dur-s);
+}
+.modal.is-open{ visibility: visible; opacity:1; }
+.modal__backdrop{ position:absolute; inset:0; background: rgba(0,79,53,.4); backdrop-filter: blur(6px); }
+.modal__panel{
+  position:relative; z-index:1;
+  background: var(--c-panel);
+  border:1px solid var(--c-line);
+  border-radius: var(--radius-l);
+  max-width: 760px; width:100%;
+  max-height: 88vh; overflow-y:auto;
+  transform: translateY(18px) scale(.98);
+  transition: transform var(--dur-m) var(--ease);
+  box-shadow: 0 32px 70px -24px rgba(0,0,0,.6);
+}
+.modal.is-open .modal__panel{ transform: translateY(0) scale(1); }
+.modal__close{
+  position:absolute; inset-block-start:18px; inset-inline-end:18px;
+  z-index:2;
+  width: 40px; height: 40px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius: 50%;
+  background: rgba(50,50,50,.06);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-dim);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px -12px rgba(0,0,0,.18);
+  cursor: pointer;
+  transition: background var(--dur-s) var(--ease), border-color var(--dur-s), color var(--dur-s), transform var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
+}
+.modal__close svg{ width:16px; height:16px; }
+.modal__close:hover{
+  background: rgba(46,139,87,.2);
+  border-color: var(--c-brass);
+  color: var(--c-brass-light);
+  transform: scale(1.06);
+  box-shadow: 0 10px 26px -8px rgba(46,139,87,.4);
+}
+.modal__close:active{ transform: scale(.96); }
+.modal__media{
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  max-height: 65vh;
+  overflow: hidden;
+  background: #eef1ee;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__media::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+
+  box-shadow:
+    inset 0 -30px 50px -35px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.modal__media img{
+  width: 100%;
+  height: 100%;
+
+  /* يحافظ على شكل الصورة الحقيقي بدون ضغط أو تشويه */
+  object-fit: contain;
+  object-position: center;
+
+  display: block;
+}
+
+/* ---- Glass / transparent info variant — used for the About-pillar
+   detail cards (Beneficiaries, Final Products, Quality). Same modal
+   markup/behavior as the equipment modal; only the panel treatment and
+   media visibility change, so the page stays visibly blurred behind a
+   frosted panel instead of the solid white equipment card. --- */
+/* ---- Modal content — comfortable horizontal breathing room on every
+   side so Arabic/English text never touches the panel edges. Desktop
+   gets ~34-40px inline padding; mobile scales down in the responsive
+   block below but never drops below ~20px. --- */
+.modal__content{
+  padding-block: 32px 40px;
+  padding-inline: clamp(24px, 4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal__category{
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--c-brass-light);
+}
+.modal__title{
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--c-ink);
+}
+.modal__body{
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-block-start: 6px;
+}
+.modal--no-media .modal__media{ display:none; }
+.modal--no-media .modal__content{ padding-block-start: 66px; }
+.modal--glass .modal__panel{
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.5);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: 0 40px 90px -28px rgba(0,40,25,.55), inset 0 1px 0 rgba(255,255,255,.6);
+}
+.modal--glass .modal__close{
+  background: rgba(255,255,255,.35);
+  backdrop-filter: blur(10px);
+}
+.modal__highlights{ display:flex; flex-direction:column; gap:12px; }
+.modal__highlight{
+  display:flex; align-items:baseline; gap:14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: rgba(255,255,255,.4);
+  border: 1px solid rgba(255,255,255,.55);
+  backdrop-filter: blur(8px);
+}
+.modal__highlight-key{
+  font-family: var(--font-mono); font-weight:700; font-size:.82rem;
+  color: var(--c-brass-light); white-space:nowrap;
+}
+.modal__highlight-desc{ font-size:.9rem; color: var(--c-ink); }
+
+/* ---- Beneficiaries pillar — compact 2-column card grid (used only for
+   the "beneficiaries" pillar detail; the shared .modal__highlight list
+   above is untouched and still used by Quality/other pillars). Same
+   glass/laboratory visual language as .modal__highlight (translucent
+   panel, blur, brass-accent mono label) so it matches the existing
+   theme, just arranged as evenly aligned cards instead of a vertical
+   list. Collapses to a single column on narrow screens (see the
+   max-width:640px block below). --- */
+.beneficiaries-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.beneficiary-card{
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  min-height: 56px;
+  padding: 12px 14px;
+  border-radius: var(--radius-m);
+  background: rgba(255,255,255,.4);
+  border: 1px solid rgba(255,255,255,.55);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono); font-weight:700; font-size:.82rem; line-height:1.4;
+  color: var(--c-brass-light);
+  transition: transform var(--dur-s) var(--ease), background var(--dur-s) var(--ease), border-color var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
+}
+.beneficiary-card:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.58);
+  border-color: rgba(255,255,255,.8);
+  box-shadow: 0 12px 26px -14px rgba(0,40,25,.4);
+}
+
+/* ============================== SITE SEARCH ============================== */
+/* Same premium/glass visual language as the rest of the header + modal
+   system — its own overlay (not the equipment modal) since it needs a
+   persistent text input and a live, scrollable result list rather than
+   a single content panel. */
+.search-overlay{
+  position: fixed; inset:0; z-index: 200;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding: clamp(88px, 12vh, 140px) 20px 20px;
+  visibility: hidden; opacity:0;
+  transition: opacity var(--dur-s), visibility var(--dur-s);
+}
+.search-overlay.is-open{ visibility:visible; opacity:1; }
+.search-overlay__backdrop{ position:absolute; inset:0; background: rgba(0,79,53,.45); backdrop-filter: blur(8px); }
+.search-panel{
+  position:relative; z-index:1;
+  width:100%; max-width: 640px;
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-l);
+  box-shadow: 0 40px 90px -24px rgba(0,0,0,.55);
+  max-height: 74vh;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  transform: translateY(-14px) scale(.98);
+  transition: transform var(--dur-m) var(--ease);
+}
+.search-overlay.is-open .search-panel{ transform: translateY(0) scale(1); }
+.search-panel__bar{
+  display:flex; align-items:center; gap:12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--c-line-soft);
+  flex-shrink:0;
+}
+.search-panel__icon{ width:20px; height:20px; color: var(--c-brass-light); flex-shrink:0; }
+.search-panel__input{
+  flex:1; min-width:0;
+  border:none; outline:none; background:transparent;
+  font-family: inherit; font-size:1.05rem; color: var(--c-ink);
+}
+.search-panel__input::placeholder{ color: var(--c-ink-faint); }
+.search-panel__close{
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(50,50,50,.06);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-dim);
+  cursor:pointer;
+  transition: background var(--dur-s) var(--ease), border-color var(--dur-s), color var(--dur-s), transform var(--dur-s) var(--ease);
+}
+.search-panel__close:hover{ background: rgba(46,139,87,.15); border-color: var(--c-brass); color: var(--c-brass-light); transform: scale(1.06); }
+.search-panel__close:active{ transform: scale(.96); }
+.search-panel__results{ overflow-y:auto; padding: 8px 10px 14px; }
+.search-group + .search-group{ margin-block-start: 10px; }
+.search-group__label{
+  font-family: var(--font-mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+  color: var(--c-ink-faint); padding: 10px 12px 6px;
+}
+.search-result{
+  display:flex; align-items:center; gap:14px;
+  padding: 11px 12px; border-radius: var(--radius-m);
+  cursor:pointer;
+  transition: background var(--dur-s);
+}
+.search-result:hover, .search-result:focus-visible{ background: var(--c-panel-raised); outline:none; }
+.search-result__icon{
+  width:38px; height:38px; border-radius: var(--radius-s); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--c-brass-dim); color: var(--c-brass-light);
+}
+.search-result__icon svg{ width:18px; height:18px; }
+.search-result__body{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.search-result__title{ font-size:.96rem; font-weight:600; color: var(--c-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.search-result__subtitle{ font-size:.8rem; color: var(--c-ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.search-panel__hint,
+.search-panel__empty{
+  padding: 46px 20px; text-align:center; color: var(--c-ink-faint); font-size:.95rem;
+}
+.detail-block{ display:flex; flex-direction:column; gap:8px; }
+.detail-block__label{
+  font-family: var(--font-mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+  color: var(--c-brass-light);
+}
+.detail-block p{ color: var(--c-ink); font-size: .98rem; }
+.detail-block--method{
+  border-inline-start: 2px solid var(--c-brass);
+  padding-inline-start: 14px;
+}
+.detail-block__method{ font-family: var(--font-mono); color: var(--c-brass-light); letter-spacing: .04em; }
+
+.bona-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-block-start: 6px; }
+.bona-card{
+  background: var(--c-bg-alt); border:1px solid var(--c-line);
+  border-radius: var(--radius-s); padding: 14px 16px;
+}
+.bona-card h5{ font-family: var(--font-mono); font-size:.88rem; color: var(--c-brass-light); margin-bottom:6px; }
+.bona-card p{ font-size:.84rem; color: var(--c-ink-dim); }
+
+/* =============================== FOOTER =============================== */
+.site-footer{ border-block-start: 1px solid var(--c-line-soft); padding-block: 40px; }
+.site-footer__inner{ display:flex; flex-direction:column; gap:10px; align-items:flex-start; color: var(--c-ink-faint); font-size:.86rem; }
+
+/* =============================== RESPONSIVE =============================== */
+@media (max-width: 860px){
+  .nav{
+    position:fixed; inset-block-start: var(--header-h); inset-inline:0;
+    background: rgba(255,255,255,.98); backdrop-filter: blur(10px);
+    flex-direction:column; align-items:flex-start; gap:0;
+    padding: 8px clamp(20px,6vw,40px) 24px;
+    transform: translateY(-12px); opacity:0; visibility:hidden;
+    transition: opacity var(--dur-s), transform var(--dur-s), visibility var(--dur-s);
+    border-block-end: 1px solid var(--c-line);
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,.12);
+  }
+  body.mobile-nav-open .nav{ transform: translateY(0); opacity:1; visibility:visible; }
+  /* The dropdown is always an opaque light panel, so its links stay dark
+     regardless of the header's scrolled/unscrolled (light-text) state. */
+  .nav .nav__link{ width:100%; padding-block: 14px; border-block-end: 1px solid var(--c-line-soft); color: var(--c-ink-dim); }
+  .nav .nav__link:hover{ color: var(--c-ink); }
+  .nav .nav__link.is-active{ color: var(--aramco-dark-green); }
+  .nav-toggle{ display:flex; }
+}
+@media (min-width: 861px){ .nav-toggle{ display:none; } }
+
+@media (max-width: 640px){
+  .modal__panel{ max-height: 92vh; }
+  .modal__content{ padding-inline: 20px; padding-block: 24px 32px; gap: 14px; }
+  .modal__body{ gap: 18px; }
+  .about__body{ padding-inline-start: 16px; }
+  .site-footer__inner{ padding-inline: 4px; }
+  .search-overlay{ padding: 82px 12px 12px; }
+  .search-panel{ max-height: 82vh; }
+  .search-panel__bar{ padding: 14px 16px; }
+  .search-panel__input{ font-size: 1rem; }
+  .beneficiaries-grid{ grid-template-columns: 1fr; }
+}
+
+/* =============================== 4K / LARGE SCREENS =============================== */
+@media (min-width: 1800px){
+  :root{ --maxw: 1560px; }
+  body{ font-size: 1.08rem; }
+}
+@media (min-width: 2400px){
+  :root{ --maxw: 1800px; }
+  body{ font-size: 1.18rem; }
+}
